@@ -13,7 +13,7 @@ def build_clean_dataframe(records: list[PaperRecord], run_date: datetime) -> pd.
     Pseudo-code:
     1. Normalize title, summary, authors, categories.
     2. Parse published/updated date.
-    3. Tinh age_days.
+    3. Tinh age_days.   
     4. Tao cot helper:
        - authors_joined
        - categories_joined
