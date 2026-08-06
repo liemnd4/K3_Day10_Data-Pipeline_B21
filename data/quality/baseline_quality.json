@@ -1,0 +1,10 @@
+{
+  "report_name": "baseline",
+  "row_count": 24,
+  "paper_id_null_count": 0,
+  "paper_id_duplicate_count": 0,
+  "title_null_count": 0,
+  "summary_short_count": 0,
+  "checks_passed": true,
+  "failures": []
+}

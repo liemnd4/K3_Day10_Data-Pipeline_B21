@@ -15,11 +15,11 @@
 
 | STT | Họ và tên | MSSV | Vai trò chính | Module/deliverable sở hữu |
 | --: | --- | --- | --- | --- |
-| 1 | Đỗ Trung Kiên | 2A202601287 | Ingestion | `src/ingestion/crossref.py` (`fetch_source_records`, `parse_crossref_payload`, `load_raw_records`) |
-| 2 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 3 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 4 | [Nếu có] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 5 | [Nếu có] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
+| 1 | Đỗ Trung Kiên | 2A202601287 | Ingestion Owner (Người 1) | `src/ingestion/crossref.py`, `data/raw/` |
+| 2 | Nguyễn Đình Liêm | 2A202601421 | Cleaning Owner (Người 2) | `src/ingestion/cleaning.py`, `data/clean/` |
+| 3 | Nguyễn Văn Hưng | 2A202601970 | Evaluation Owner (Người 3) | `src/evaluation/testset.py`, `data/eval/` |
+| 4 | Nguyễn Hồng Yến | 2A202601065 | Observability Owner (Người 4) | `src/observability/quality.py`, `src/observability/reporting.py`, `data/quality/`, `data/reports/phase1_report.md` |
+| 5 | Lê Trần Long | 2A202601257 | Pipeline Integrator / Lead kỹ thuật (Người 5) | `src/ingestion/corruption.py`, `src/pipelines/`, `data/results/corruption_log.json`, `data/reports/corruption_report.md` |
 
 ## 2. Tóm tắt kết quả
 

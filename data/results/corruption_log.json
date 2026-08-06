@@ -1,0 +1,9 @@
+{
+  "dropped_latest_records": 3,
+  "blank_summaries": 2,
+  "injected_noise": 2,
+  "truncated_titles": 2,
+  "stale_dates": 2,
+  "duplicate_rows": 2,
+  "total_affected_rows": 13
+}

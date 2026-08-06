@@ -1,0 +1,13 @@
+{
+  "report_name": "corrupted",
+  "row_count": 23,
+  "paper_id_null_count": 0,
+  "paper_id_duplicate_count": 2,
+  "title_null_count": 0,
+  "summary_short_count": 2,
+  "checks_passed": false,
+  "failures": [
+    "paper_id_duplicate_check",
+    "summary_short_check"
+  ]
+}
