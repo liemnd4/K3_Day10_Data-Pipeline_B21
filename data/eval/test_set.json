@@ -1,0 +1,182 @@
+[
+  {
+    "id": "q_001_summary",
+    "question_type": "summary",
+    "question": "What is the summary of the paper 'Title 0'?",
+    "ground_truth": "Summary 0.",
+    "ground_truth_doc_ids": [
+      "p0"
+    ]
+  },
+  {
+    "id": "q_001_authors",
+    "question_type": "authors",
+    "question": "Who authored the paper 'Title 0'?",
+    "ground_truth": "Author A",
+    "ground_truth_doc_ids": [
+      "p0"
+    ]
+  },
+  {
+    "id": "q_001_date",
+    "question_type": "date",
+    "question": "When was the paper 'Title 0' published?",
+    "ground_truth": "2024-01-01",
+    "ground_truth_doc_ids": [
+      "p0"
+    ]
+  },
+  {
+    "id": "q_001_categories",
+    "question_type": "categories",
+    "question": "What categories does the paper 'Title 0' belong to?",
+    "ground_truth": "cs.AI",
+    "ground_truth_doc_ids": [
+      "p0"
+    ]
+  },
+  {
+    "id": "q_002_summary",
+    "question_type": "summary",
+    "question": "What is the summary of the paper 'Title 1'?",
+    "ground_truth": "Summary 1.",
+    "ground_truth_doc_ids": [
+      "p1"
+    ]
+  },
+  {
+    "id": "q_002_authors",
+    "question_type": "authors",
+    "question": "Who authored the paper 'Title 1'?",
+    "ground_truth": "Author A",
+    "ground_truth_doc_ids": [
+      "p1"
+    ]
+  },
+  {
+    "id": "q_002_date",
+    "question_type": "date",
+    "question": "When was the paper 'Title 1' published?",
+    "ground_truth": "2024-01-01",
+    "ground_truth_doc_ids": [
+      "p1"
+    ]
+  },
+  {
+    "id": "q_002_categories",
+    "question_type": "categories",
+    "question": "What categories does the paper 'Title 1' belong to?",
+    "ground_truth": "cs.AI",
+    "ground_truth_doc_ids": [
+      "p1"
+    ]
+  },
+  {
+    "id": "q_003_summary",
+    "question_type": "summary",
+    "question": "What is the summary of the paper 'Title 2'?",
+    "ground_truth": "Summary 2.",
+    "ground_truth_doc_ids": [
+      "p2"
+    ]
+  },
+  {
+    "id": "q_003_authors",
+    "question_type": "authors",
+    "question": "Who authored the paper 'Title 2'?",
+    "ground_truth": "Author A",
+    "ground_truth_doc_ids": [
+      "p2"
+    ]
+  },
+  {
+    "id": "q_003_date",
+    "question_type": "date",
+    "question": "When was the paper 'Title 2' published?",
+    "ground_truth": "2024-01-01",
+    "ground_truth_doc_ids": [
+      "p2"
+    ]
+  },
+  {
+    "id": "q_003_categories",
+    "question_type": "categories",
+    "question": "What categories does the paper 'Title 2' belong to?",
+    "ground_truth": "cs.AI",
+    "ground_truth_doc_ids": [
+      "p2"
+    ]
+  },
+  {
+    "id": "q_004_summary",
+    "question_type": "summary",
+    "question": "What is the summary of the paper 'Title 3'?",
+    "ground_truth": "Summary 3.",
+    "ground_truth_doc_ids": [
+      "p3"
+    ]
+  },
+  {
+    "id": "q_004_authors",
+    "question_type": "authors",
+    "question": "Who authored the paper 'Title 3'?",
+    "ground_truth": "Author A",
+    "ground_truth_doc_ids": [
+      "p3"
+    ]
+  },
+  {
+    "id": "q_004_date",
+    "question_type": "date",
+    "question": "When was the paper 'Title 3' published?",
+    "ground_truth": "2024-01-01",
+    "ground_truth_doc_ids": [
+      "p3"
+    ]
+  },
+  {
+    "id": "q_004_categories",
+    "question_type": "categories",
+    "question": "What categories does the paper 'Title 3' belong to?",
+    "ground_truth": "cs.AI",
+    "ground_truth_doc_ids": [
+      "p3"
+    ]
+  },
+  {
+    "id": "q_005_summary",
+    "question_type": "summary",
+    "question": "What is the summary of the paper 'Title 4'?",
+    "ground_truth": "Summary 4.",
+    "ground_truth_doc_ids": [
+      "p4"
+    ]
+  },
+  {
+    "id": "q_005_authors",
+    "question_type": "authors",
+    "question": "Who authored the paper 'Title 4'?",
+    "ground_truth": "Author A",
+    "ground_truth_doc_ids": [
+      "p4"
+    ]
+  },
+  {
+    "id": "q_005_date",
+    "question_type": "date",
+    "question": "When was the paper 'Title 4' published?",
+    "ground_truth": "2024-01-01",
+    "ground_truth_doc_ids": [
+      "p4"
+    ]
+  },
+  {
+    "id": "q_005_categories",
+    "question_type": "categories",
+    "question": "What categories does the paper 'Title 4' belong to?",
+    "ground_truth": "cs.AI",
+    "ground_truth_doc_ids": [
+      "p4"
+    ]
+  }
+]
