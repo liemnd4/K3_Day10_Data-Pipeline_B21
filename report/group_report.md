@@ -15,7 +15,7 @@
 
 | STT | Họ và tên | MSSV | Vai trò chính | Module/deliverable sở hữu |
 | --: | --- | --- | --- | --- |
-| 1 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
+| 1 | Đỗ Trung Kiên | 2A202601287 | Ingestion | `src/ingestion/crossref.py` (`fetch_source_records`, `parse_crossref_payload`, `load_raw_records`) |
 | 2 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
 | 3 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
 | 4 | [Nếu có] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
@@ -133,27 +133,37 @@ python script/run_corruption_flow.py
 
 ### Nguồn dữ liệu
 
-| Thuộc tính                | Giá trị                             |
+| Thuộc tính | Giá trị |
 | --------------------------- | ------------------------------------- |
-| Source                      | [Crossref endpoint/dataset thực tế] |
-| Query/filter                | [Query hoặc filter]                  |
-| Thời điểm lấy dữ liệu | [Timestamp]                           |
-| Số record nhận được    | [Số lượng]                         |
-| Cơ chế retry/backoff      | [Mô tả ngắn]                       |
+| Source | Crossref REST API (`https://api.crossref.org/works`) |
+| Query/filter | Query: `"agentic retrieval augmented generation large language model"`<br>Filter: `"from-pub-date:<180_days_ago>,has-abstract:true"` |
+| Thời điểm lấy dữ liệu | 2026-08-06T03:02:37Z |
+| Số record nhận được | 24 records |
+| Cơ chế retry/backoff | Exponential Backoff Retry (sleep `wait_time = backoff_factor * (2 ** (attempt - 1))`) cho mã lỗi HTTP `429` (Rate limit) và `503` (Service unavailable), tối đa 5 lần thử. |
 
-### Raw và clean schema
+### Raw và clean schema (Contract A & Contract B)
 
-| Trường        | Kiểu dữ liệu | Bắt buộc?  | Ý nghĩa   | Xử lý khi thiếu/sai |
+| Trường | Kiểu dữ liệu | Bắt buộc? | Ý nghĩa | Xử lý khi thiếu/sai |
 | --------------- | --------------- | ------------ | ----------- | ---------------------- |
-| [Tên trường] | [Kiểu]         | [Có/Không] | [Ý nghĩa] | [Cách xử lý]        |
-| [Tên trường] | [Kiểu]         | [Có/Không] | [Ý nghĩa] | [Cách xử lý]        |
+| `paper_id` | `str` | Có | Stable DOI identifier (đã cắt bớt `https://doi.org/`) | Loại bỏ record nếu thiếu DOI |
+| `title` | `str` | Có | Tiêu đề công bố khoa học | Loại bỏ record nếu rỗng title |
+| `summary` | `str` | Không | Abstract/tóm tắt nội dung (đã làm sạch XML/JATS tags) | Fallback `""` nếu thiếu |
+| `authors` | `list[str]` | Không | Danh sách tên các tác giả | Fallback `[]` nếu thiếu |
+| `categories` | `list[str]` | Không | Danh mục/chủ đề nghiên cứu | Fallback `[]` nếu thiếu |
+| `primary_category` | `str` | Không | Danh mục chính (`categories[0]`) | Fallback `""` nếu thiếu |
+| `published` | `str` | Có | Ngày công bố dạng ISO `YYYY-MM-DD` | Fallback `"1970-01-01"` |
+| `updated` | `str` | Có | Ngày cập nhật dạng ISO `YYYY-MM-DD` | Fallback = `published` nếu thiếu |
+| `abs_url` | `str` | Có | Đường dẫn trang thông tin bài báo | Fallback `https://doi.org/{paper_id}` |
+| `pdf_url` | `str` | Không | Đường dẫn tải PDF | Fallback `""` nếu thiếu |
+| `comment` | `str` | Không | Thông tin nhà xuất bản / loại hình | Fallback `""` nếu thiếu |
 
 ### Quy tắc cleaning
 
-| Quy tắc                                 | Quality dimension liên quan | Số record bị tác động | Cách xác minh      |
+| Quy tắc | Quality dimension liên quan | Số record bị tác động | Cách xác minh |
 | ---------------------------------------- | ---------------------------- | -------------------------: | -------------------- |
-| [Ví dụ: loại record không có title] | [Completeness/Validity/...]  |              [Số lượng] | [Artifact/kiểm tra] |
-| [Quy tắc thực tế]                     | [Dimension]                  |              [Số lượng] | [Artifact/kiểm tra] |
+| Loại bỏ record không có DOI hoặc Title | Completeness / Validity | 0 (API trả về đủ 24 bài hợp lệ) | Audit script đối chiếu `crossref_response.json` vs `crossref_records.json` |
+| Bóc tách XML/JATS tags trong abstract | Conformity / Accuracy | 24 | Regex strip `<[^>]+>` và `html.unescape` |
+| Deduplicate theo `paper_id` | Uniqueness | 0 | `seen_paper_ids` set check |
 
 Giải thích cách nhóm tạo `text_for_embedding`, document ID và `age_days`:
 
