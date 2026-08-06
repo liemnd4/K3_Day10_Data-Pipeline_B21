@@ -7,9 +7,9 @@
 | Họ và tên       | Đỗ Trung Kiên              |
 | MSSV               | 2A202601287                |
 | Khóa/Lớp         | K3                         |
-| Tên nhóm         | [Chờ cập nhật tên nhóm]    |
-| Vai trò chính    | Ingestion (Raw Ingestion & Lineage) |
-| Repository         | [Chờ cập nhật link repo]   |
+| Tên nhóm         | Group B21                  |
+| Vai trò chính    | Ingestion Owner (Người 1)  |
+| Repository         | https://github.com/liemnd4/K3_Day10_Data-Pipeline_B21 |
 | Ngày hoàn thành | 2026-08-06                 |
 
 ---
@@ -28,8 +28,8 @@
 
 | Hoạt động | Thành viên/module được hỗ trợ | Kết quả |
 | ------------------------------------ | ------------------------------------ | ---------------------------- |
-| Xác minh Data Contract & Audit Completeness | Người 2 (Cleaning) | Đã audit 100% 24 record chứa đủ 11/11 trường theo Contract A, cung cấp Sample JSON record bàn giao cho bước Cleaning. |
-| Kiểm thử tự động bằng script Python | Người 5 (Integration) | Tạo script kiểm thử độc lập luồng Ingestion đảm bảo `fetch_source_records` và `load_raw_records` hoạt động chính xác trước khi tích hợp vào `phase1.py`. |
+| Xác minh Data Contract & Audit Completeness | Nguyễn Đình Liêm (Người 2 - Cleaning) | Đã audit 100% 24 record chứa đủ 11/11 trường theo Contract A, cung cấp Sample JSON record bàn giao cho bước Cleaning. |
+| Kiểm thử tự động & Tích hợp Pipeline | Lê Trần Long (Người 5 - Lead kỹ thuật) | Tạo script kiểm thử độc lập luồng Ingestion đảm bảo `fetch_source_records` và `load_raw_records` hoạt động chính xác trước khi tích hợp vào `phase1.py` và `corruption_flow.py`. |
 
 ---
 
@@ -43,8 +43,8 @@
 | Khôi phục từ snapshot | `src/ingestion/crossref.py`<br>`load_raw_records` | Đọc lại 24 `PaperRecord` chính xác từ file JSON snapshot. | `assert len(recs) == len(load_raw_records(path))` |
 
 **Mô tả Output cụ thể tạo ra:**
-- File `data/raw/crossref_response.json` (238 KB) lưu giữ chứng cứ nguyên bản từ nguồn Crossref API.
-- File `data/raw/crossref_records.json` (57.7 KB) chứa 24 `PaperRecord` chuẩn hóa, làm cầu nối chính thức bàn giao dữ liệu thô sạch cho module Cleaning.
+- File `data/raw/crossref_response.json` (238 KB) lưu giữ chứng cứ nguyên bản từ nguồn Crossref API phục vụ Audit Lineage.
+- File `data/raw/crossref_records.json` (57.7 KB) chứa 24 `PaperRecord` chuẩn hóa làm cầu nối bàn giao dữ liệu thô sạch cho module Cleaning và làm snapshot cho Repair Flow.
 
 ---
 
@@ -70,7 +70,7 @@ Xây dựng module Ingestion có khả năng tự động thu thập metadata c�
 | **Input** | `Settings` (chứa `source_query`, `source_filter`, `max_results`) & HTTP Response từ `https://api.crossref.org/works`. |
 | **Output** | List `PaperRecord` dataclass & 2 file artifacts (`crossref_response.json`, `crossref_records.json`). |
 | **Module phụ thuộc** | `src/core/config.py` (`Settings`, `Paths`). |
-| **Module sử dụng output** | `src/ingestion/cleaning.py` (Người 2 - Cleaning) & `src/pipelines/corruption_flow.py` (Người 5 - Integration). |
+| **Module sử dụng output** | `src/ingestion/cleaning.py` (Người 2 - Cleaning) & `src/pipelines/corruption_flow.py` (Người 5 - Lead kỹ thuật). |
 | **Điều kiện lỗi cần xử lý** | API nghẽn rate limit (HTTP 429/503), record thiếu DOI/Title (lọc bỏ), abstract chứa XML/JATS formatting. |
 
 ### Cách xác minh
@@ -118,7 +118,7 @@ print('Sample paper_id:', records[0].paper_id)
   ```text
   UnicodeEncodeError: 'charmap' codec can't encode characters in position 0-7: character maps to <undefined>
   ```
-  Và gián đoạn do HTTP status code `429 Too Many Requests` khi gọi API liên tục.
+  Và lỗi gián đoạn do HTTP status code `429 Too Many Requests` khi gọi API liên tục.
 - **Lệnh hoặc bước tái hiện:**
   Chạy lệnh kiểm thử `uv run python -c "..."` trên terminal PowerShell Windows mặc định encoding CP1252 khi in các tiêu đề bài báo chứa ký tự Cyrillic/Tiếng Nga.
 - **Nguyên nhân gốc:**
@@ -140,36 +140,42 @@ print('Sample paper_id:', records[0].paper_id)
    Dữ liệu thô từ Crossref API được `fetch_source_records` lấy về và lưu vào `data/raw/`. Tiếp theo, module Cleaning (`cleaning.py`) đọc raw records, làm sạch text, tính toán `age_days` và ghép thành chuỗi `text_for_embedding` rồi xuất ra `data/clean/papers_clean.csv`. Module Embedding (`index.py`) đọc file clean, chạy mô hình `sentence-transformers/all-MiniLM-L6-v2` chuyển văn bản thành vector embeddings và lưu vào Vector Store ChromaDB (`data/chroma`).
 
 2. **Evaluation set và ground-truth document IDs dùng để đo retrieval/answer quality ra sao?**
-   Evaluation set (`test_set.json`) được tạo ra bằng cách trích xuất các thông tin tiêu biểu từ dataset sạch, bao gồm các loại câu hỏi (`summary`, `authors`, `date`, `categories`). Mỗi câu hỏi đính kèm danh sách `ground_truth_doc_ids` (chính là `paper_id` của bài báo chứa đáp án). Khi đánh giá, module evaluation cho agent thực hiện Semantic Search tìm ra top-k bài báo; nếu `paper_id` thật nằm trong kết quả tìm được thì tính là 1 Hit (`retrieval_hit_rate`). Đồng thời, câu trả lời do LLM sinh ra được so sánh với `ground_truth` để tính `mean_token_f1` và `judge_accuracy`.
+   Evaluation set (`test_set.json`) gồm 60 câu hỏi được tạo ra bằng cách trích xuất thông tin tiêu biểu từ dataset sạch (`summary`, `authors`, `date`, `categories`). Mỗi câu hỏi đính kèm danh sách `ground_truth_doc_ids` (chính là `paper_id` của bài báo chứa đáp án). Khi đánh giá, module evaluation cho agent thực hiện Semantic Search tìm ra top-k bài báo; nếu `paper_id` thật nằm trong kết quả tìm được thì tính là 1 Hit (`retrieval_hit_rate`). Đồng thời, câu trả lời do LLM sinh ra được so sánh với `ground_truth` để tính `mean_token_f1` và `judge_accuracy`.
 
 3. **Quality checks khác freshness monitoring ở điểm nào trong bài lab?**
    - *Quality checks* tập trung vào tính toàn vẹn và tính đúng đắn của cấu trúc dữ liệu (Data Structure & Integrity) tại thời điểm hiện tại: kiểm tra xem có row nào bị null `paper_id`, trùng lặp ID, rỗng title, hay summary quá ngắn hay không.
    - *Freshness monitoring* tập trung vào tính cập nhật theo thời gian (Data Timeliness): đo đạc khoảng cách ngày xuất bản `published` so với ngày hiện tại (`age_days`), xác định xem dữ liệu có bị lỗi thời (stale) so với ngưỡng quy định `freshness_threshold_days` (180 ngày) hay không.
 
 4. **Vì sao phải dùng cùng test set cho baseline, corrupted và repaired?**
-   Sử dụng chung một bộ `test_set.json` cố định xuyên suốt cả 3 trạng thái là nguyên tắc quan trọng để đảm bảo tính chuẩn xác của thực nghiệm (Controlled Experiment). Việc này giữ nguyên biến số đầu vào (cùng bộ câu hỏi và đáp án chuẩn), giúp ta đo lường chính xác sự biến động chỉ số (metrics) hoàn toàn do sự suy giảm chất lượng dữ liệu (Corruption) và sự phục hồi chất lượng dữ liệu (Repair) gây ra.
+   Sử dụng chung một bộ `test_set.json` cố định xuyên suốt cả 3 trạng thái là nguyên tắc quan trọng để đảm bảo tính chuẩn xác của thực nghiệm (Controlled Experiment). Việc này giữ nguyên biến số đầu vào (cùng 60 câu hỏi và đáp án chuẩn), giúp ta đo lường chính xác sự biến động chỉ số (metrics) hoàn toàn do sự suy giảm chất lượng dữ liệu (Corruption) và sự phục hồi chất lượng dữ liệu (Repair) gây ra.
 
 5. **Repair được xem là thành công dựa trên artifact và metric nào?**
    Repair được xem là thành công khi:
-   - *Artifacts:* File `data/clean/papers_clean_repaired.csv` được khôi phục đầy đủ từ raw source, file `data/quality/freshness_report.json` khôi phục về trạng thái `is_fresh: true`, và `data/reports/corruption_report.md` thể hiện rõ cả 3 cột dữ liệu.
-   - *Metrics:* Các chỉ số đánh giá `retrieval_hit_rate`, `mean_token_f1`, và `judge_accuracy` của trạng thái Repaired tăng bật trở lại gần hoặc bằng mức Baseline ban đầu.
+   - *Artifacts:* File `data/clean/papers_clean_repaired.csv` được khôi phục đầy đủ từ raw source snapshot, file `data/quality/freshness_report.json` khôi phục về trạng thái `is_fresh: true`, và `data/reports/corruption_report.md` thể hiện rõ cả 3 cột dữ liệu.
+   - *Metrics:* Các chỉ số đánh giá `retrieval_hit_rate` (tăng từ 0.8 lên 1.0), `mean_token_f1` (tăng từ 0.6565 lên 0.9000), và `judge_accuracy` (tăng từ 0.6167 lên 0.8667) của trạng thái Repaired tăng bật trở lại hoàn toàn tương đương với mức Baseline ban đầu.
 
 ---
 
 ## 8. Phân tích kết quả
 
-*(Lưu ý: Các chỉ số sẽ được cập nhật đầy đủ sau khi nhóm chạy hoàn tất `run_phase1.py` và `run_corruption_flow.py`)*
-
-### Metrics chính
+### Metrics chính (Đã cập nhật từ thực nghiệm `Group B21`)
 
 | Metric/signal          | Baseline | Corrupted | Repaired | Nhận xét của cá nhân |
 | ---------------------- | -------: | --------: | -------: | ------------------------- |
-| `retrieval_hit_rate` |    [TBD] |     [TBD] |    [TBD] | Kỳ vọng suy giảm mạnh ở Corrupted và phục hồi ở Repaired. |
-| `mean_token_f1`      |    [TBD] |     [TBD] |    [TBD] | Đo lường độ chính xác từ vựng giữa câu trả lời và ground truth. |
-| `judge_accuracy`     |    [TBD] |     [TBD] |    [TBD] | Đo độ chính xác câu trả lời do LLM Judge đánh giá. |
-| `mean_judge_score`   |    [TBD] |     [TBD] |    [TBD] | Điểm trung bình đánh giá từ LLM Judge (thang điểm 1-5). |
-| Quality checks         |     Pass |      Fail |     Pass | Trạng thái Quality Check phục hồi sau khi Re-ingest từ raw. |
-| Freshness status       |    Fresh |     Stale |    Fresh | Stale khi bị inject data cũ, Fresh trở lại sau repair. |
+| `retrieval_hit_rate` |   1.0000 |    0.8000 |   1.0000 | Search Hit Rate suy giảm khi bị drop 3 bài báo và chèn nhiễu, khôi phục hoàn toàn khi Repair từ raw. |
+| `mean_token_f1`      |   0.9000 |    0.6565 |   0.9000 | Token F1 giảm mạnh do Agent sinh câu trả lời dựa trên abstract rỗng/nhiễu, phục hồi về 0.9000 sau repair. |
+| `judge_accuracy`     |   0.8667 |    0.6167 |   0.8667 | Tỉ lệ câu trả lời đúng do LLM Judge đánh giá bị tụt ở Corrupted, phục hồi hoàn toàn sau Repair. |
+| `mean_judge_score`   |   4.4667 |    3.6000 |   4.4833 | Điểm trung bình đánh giá từ LLM Judge giảm xuống 3.60/5 và phục hồi lên 4.48/5. |
+| Quality checks         |     PASS |      FAIL |     PASS | Báo cáo Quality chuyển FAIL khi bị rỗng summary và trùng lặp row, PASS trở lại sau Repair. |
+| Freshness status       |    FRESH |     STALE |    FRESH | Freshness chuyển STALE khi dữ liệu bị đổi ngày về 1990, FRESH trở lại sau Repair. |
+
+### Kết luận từ số liệu
+
+1. **Chuỗi Nhân quả 1 (Corruption Impact):**  
+   `Bơm dữ liệu lỗi (trùng lặp, rỗng abstract, ngày xuất bản cổ xưa 1990)` $\longrightarrow$ `Kích hoạt cảnh báo Quality FAIL & Freshness STALE` $\longrightarrow$ `Làm Hit Rate giảm từ 1.0 xuống 0.8, Token F1 giảm từ 0.9000 xuống 0.6565 và Judge Score giảm từ 4.47 xuống 3.60`.
+
+2. **Chuỗi Nhân quả 2 (Repair Recovery):**  
+   `Khôi phục dữ liệu từ Raw Snapshot (crossref_records.json)` $\longrightarrow$ `Khôi phục tín hiệu chất lượng (Quality PASS, Freshness FRESH)` $\longrightarrow$ `Đưa toàn bộ hiệu năng RAG Agent (Hit Rate 1.0, Token F1 0.9, Judge Accuracy 0.8667) trở lại hoàn toàn tương đương với baseline ban đầu`.
 
 ---
 
@@ -177,7 +183,7 @@ print('Sample paper_id:', records[0].paper_id)
 
 ### Ba điều quan trọng nhất
 
-1. **Về Data Pipeline:** Xây dựng Data Pipeline cần tuân thủ nghiêm ngặt **Data Contract** và lưu trữ dữ liệu thô hai lớp (Raw HTTP Payload & Parsed Snapshot) để đảm bảo tính an toàn và khả năng phục hồi dữ liệu khi gặp sự cố.
+1. **Về Data Pipeline:** Xây dựng Data Pipeline cần tuân thủ nghiêm ngặt **Data Contract** và lưu trữ dữ liệu thô hai lớp (Raw HTTP Payload & Parsed Snapshot) để đảm bảo tính an toàn, khả năng audit và khả năng phục hồi dữ liệu khi gặp sự cố.
 2. **Về Data Quality & Observability:** Chất lượng dữ liệu đầu vào quyết định trực tiếp hiệu năng của hệ thống RAG (*Garbage In, Garbage Out*). Việc giám sát tự động các chỉ số Data Quality & Freshness giúp phát hiện sớm các bất thường dữ liệu trước khi ảnh hưởng tới người dùng.
 3. **Về ảnh hưởng của Data tới RAG Agent:** Một rủi ro nhỏ trong khâu Ingestion (như lọt thẻ XML rác, mất title hoặc sai định dạng ngày) có thể làm giảm mạnh điểm Retrieval Hit Rate và khiến LLM đưa ra câu trả lời sai lệch (hallucination).
 
